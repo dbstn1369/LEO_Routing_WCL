@@ -1,0 +1,660 @@
+\documentclass[letter]{article}
+\addtolength{\skip\footins}{2pc plus 5pt}
+\setlength{\fboxsep}{10pt}
+
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{cite}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{epstopdf}
+\usepackage{setspace}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\begin{document}
+\setstretch{1.3}
+
+{\bf\large
+\begin{center}
+Response to Reviewers' Comments\\
+Link-Aware Routing in Multi-Tier LEO Mega-Constellations\\
+WCL2026-0742
+\end{center}
+\vspace{-0.15cm}}
+\noindent\rule{\textwidth}{0.5mm}\\
+\noindent {\bf General:} We appreciate the time and effort the Editor and reviewers dedicated to evaluating our paper and providing insightful feedback to help improve its quality. We have revised the manuscript based on all comments. The tracked-changes version of the revised paper is attached, with revisions or additions marked in blue. For clarity and consistency, the reference, figure, and table numbering in this letter have been aligned with those of the revised manuscript. Our detailed responses are presented below.
+
+\color{black}
+
+\vspace{0.1cm} \noindent
+\section*{\large Responses to Editor's Comments}
+
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Editor Comment 1.}
+The rationale and appropriateness of the current objective function should be rigorously clarified.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Thank you for this comment. We have revised the wording of the optimization objective throughout the manuscript. The objective in Eq.~(12a) maximizes the average ISL utility per hop across all source--destination pairs. This ratio-based formulation penalizes unnecessarily long paths that accumulate low-utility ISLs, thereby favoring paths where each hop contributes high utility. Directly optimizing throughput requires solving a simulation-based problem at each snapshot interval, which is not tractable for real-time optimization in a 1,500-satellite network~\cite{guo2024lightweight}. Instead, the ISL utility $U_{ij}$ serves as a tractable per-link proxy that captures both ISL stability ($l_{ij}$) and capacity ($c_{ij}$), which can be computed efficiently from SINR measurements and TLE data at each snapshot. We have also added a clarifying sentence in Section~IV-B explaining that ISL states including link duration and capacity directly affect routing path reliability~\cite{han2023time}. Routing algorithms that jointly consider link duration and capacity avoid selecting ISLs with short remaining duration, which reduces path interruptions and improves throughput, as empirically confirmed in Fig.~3. For your convenience, the relevant addition in Section~IV-B is provided below.
+
+\begin{quote}
+\textcolor{blue}{ISLs with higher utility have longer durations and higher SINR values, which reduce link failure probability and directly improve throughput and packet loss rate, as confirmed in Fig.~3.}
+\end{quote}
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Editor Comment 2.}
+The suboptimality caused by the LP relaxation method should be thoroughly discussed.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We appreciate this comment. We have added a discussion in Section~III-A of the revised manuscript. The LP relaxation is used only for label generation during offline training, not for routing. The LP relaxation allows binary variables $x_{ij}^{sd}$ to take continuous values in $[0,1]$, which generally yields non-integer solutions that do not directly correspond to valid routing paths. However, the flow conservation constraints~\eqref{eq:c1}--\eqref{eq:c3} form a standard network flow structure, whose constraint matrix is totally unimodular. This property guarantees that the LP relaxation always yields integer-valued optimal solutions, and therefore introduces no suboptimality. The LP-derived labels thus accurately identify high-utility ISLs for GNN training. For your convenience, the relevant addition in Section~III-A is provided below.
+
+\begin{quote}
+\textcolor{blue}{Since the constraint matrix of the flow conservation constraints~(12b)--(12d) is totally unimodular, the LP relaxation yields integer-valued optimal solutions directly~\cite{zhao2022link}, and LP-derived labels accurately identify high-utility ISLs in $\mathcal{P}$.}
+\end{quote}
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Editor Comment 3.}
+The signaling overhead and control-information exchange required by the centralized approach should be explicitly analyzed or discussed.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We agree that this is an important practical consideration. The signaling overhead of the proposed centralized architecture is bounded as follows. Each satellite measures SINR for its ISLs and reports to the LMCC once per snapshot interval, so the total signaling overhead is at most $|\mathcal{S}| \times |\mathcal{N}_i|$ SINR reports per snapshot. This snapshot-based reporting follows existing centralized routing architectures~\cite{han2023time}, where the LMCC is deployed on a cloud server with sufficient processing capacity. The propagation delay between the terrestrial controller and LEO satellites is approximately 1--100~ms~\cite{hu2022software}, which is negligible relative to the snapshot interval of $T = 5$~min. Once routing paths are determined, the LMCC distributes one routing path per source--destination pair to the respective satellites, after which the satellites need not communicate with the controller during routing~\cite{hu2022software},~\cite{huang2026dynamic}.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Editor Comment 4.}
+The use of fixed system parameter values, including the weighting factor and the inference pruning threshold, should be clearly justified.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Thank you for this comment. We have added justification for both parameters in Section~IV-B of the revised manuscript and conducted sensitivity analyses for $\tau \in \{0.1, 0.3, 0.5, 0.7, 0.9\}$ and $\beta \in \{0.1, 0.3, 0.5, 0.7, 0.9\}$. The results for Scenario~2 (2.8~Gbps, 100~s) are shown in Table~I of the revised manuscript and reproduced below for convenience.
+
+\begin{center}
+\color{blue}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{cc|cc|cc}
+\hline
+$\tau$ & Thr./PLR & $\beta$ & Thr./PLR & $T$ (min) & Thr./PLR \\
+\hline
+0.1 & 1.461/26.0  & 0.1 & 1.529/23.6 & 1  & 1.589/20.8 \\
+0.3 & 1.461/26.0  & 0.3 & 1.577/21.6 & 5  & 1.589/20.8 \\
+0.5 & 1.589/20.8  & 0.5 & 1.589/20.8 & 10 & 0.863/57.0 \\
+0.7 & 0.024/98.8  & 0.7 & 1.548/22.7 & 30 & 0.319/84.1 \\
+0.9 & 0.000/100.0 & 0.9 & 1.510/24.4 & -- & --         \\
+\hline
+\end{tabular}
+\captionof{table}{Sensitivity of $\tau$, $\beta$, and $T$ (Scenario~2, 2.8~Gbps, 100~s; Throughput in Gbps, PLR in \%).}
+\end{center}
+
+For $\tau$, we observe that $\tau = 0.5$ achieves the best trade-off between graph sparsity and routing performance, giving $1.589$~Gbps and $20.8\%$ PLR. At $\tau \leq 0.3$, the pruning is too loose and the throughput approaches the w/o-Pruning baseline ($1.461$~Gbps, $26.0\%$ PLR). At $\tau \geq 0.7$, excessive pruning disconnects the routing graph for nearly all source--destination pairs, causing routing failures with PLR approaching $100\%$. For $\beta$, throughput peaks at $\beta = 0.5$ ($1.589$~Gbps, $20.8\%$ PLR) and decreases at both extremes ($1.529$~Gbps at $\beta = 0.1$ and $1.510$~Gbps at $\beta = 0.9$). This confirms that balanced weighting at $\beta = 0.5$ is near-optimal. For your convenience, the relevant addition in Section~IV-A is provided below.
+
+\begin{quote}
+\textcolor{blue}{The weighting factor $\beta$ and the pruning threshold $\tau$ are both set to $0.5$, selected based on the sensitivity analysis in Table~I as detailed in Section~IV-B.}
+\end{quote}
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Editor Comment 5.}
+The adaptability and generality of the proposed GNN-based framework to time-varying network environments should be further examined.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We appreciate this comment. We have added a discussion on generalization at the end of Section~III-A of the revised manuscript. Regarding temporal generalization: since $l_{ij}$ and $c_{ij}$ are recomputed at every snapshot interval using the current SINR measurements and TLE-derived satellite positions and velocities, the GNN input features always reflect the current link conditions. The trained GNN therefore generalizes across different snapshot intervals without retraining. Regarding traffic changes: since the GNN input features do not include traffic load or flow statistics, the pruning decisions are independent of traffic patterns. For different orbital configurations such as new satellite deployments, offline retraining with updated TLE data is performed, which we identify as future work. For your convenience, the relevant addition in Section~III-A is provided below.
+
+\begin{quote}
+\textcolor{blue}{Since the routing decisions are based on normalized topological and physical link features rather than global geographic coordinates, the trained GNN generalizes across different snapshot intervals without retraining.}
+\end{quote}
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Editor Comment 6.}
+A comparison with state-of-the-art intelligent routing protocols is strongly recommended.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We agree with this comment and have added a new benchmark method and an ablation baseline to Section~IV of the revised manuscript: (1) Graph Reinforcement Learning Routing (GRLR)~\cite{zhang2025grlr}, a GNN-based reinforcement learning (RL) routing algorithm for single-tier LEO mega-constellations, applied here to the multi-tier environment; and (2) Without Pruning (w/o Pruning), the proposed heuristic routing applied to the full graph without GNN-based link pruning, to evaluate the contribution of GNN-based pruning. The updated simulation results are shown below.
+
+\begin{quote}
+\setcounter{figure}{1}
+\begin{figure}[!h]
+\color{blue}
+\centering
+\includegraphics[width=0.9\linewidth]{Image/fig2_combined_duration.eps}
+\caption{Average throughput and packet loss rate over varying data transmission durations.}
+\end{figure}
+\end{quote}
+
+\begin{quote}
+\setcounter{figure}{3}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.9\linewidth]{Image/fig4_combined_rate.eps}
+\caption{Average throughput and packet loss rate over varying data transmission rates.}
+\end{figure}
+\end{quote}
+
+The proposed algorithm achieves 5.4\% and 5.5\% higher throughput than GRLR at 100~s in Scenarios~1 and 2, respectively, because GRLR does not consider ISL duration or capacity in multi-tier environments. Moreover, the w/o Pruning baseline confirms that GNN-based pruning effectively removes unstable ISLs, as the proposed algorithm achieves 8.8\% higher throughput (1.589~Gbps vs.\ 1.461~Gbps) and 5.2\% lower PLR (20.8\% vs.\ 26.0\%) than w/o Pruning in Scenario~2 at 100~s and 2.8~Gbps.
+
+\newpage
+\vspace{0.1cm} \noindent
+\section*{\large Responses to Reviewer 1's Comments}
+
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Overall Comments.}
+This paper formulated a routing optimization problem to determine the optimal ISL path between two end users by maximizing the total ISL utility, considering both ISL duration and capacity. Generally, the authors seem have done a solid work, however, many parts should be further improved.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We sincerely appreciate the reviewer's thorough evaluation and constructive feedback. We have carefully addressed each comment as detailed below.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 1.}
+The optimization objective is to maximize the average link utility per path, but the ultimate evaluation metric is network throughput. This paper does not rigorously establish that maximizing this particular average utility function directly translates to maximizing end-to-end or aggregate network throughput.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Thank you for this insightful comment. We have added a clarifying sentence in Section~IV-B of the revised manuscript establishing the connection between the utility objective and the throughput metric. As established in~\cite{han2023time},~\cite{wang2023reliability}, ISL link duration and capacity directly determine the reliability of routing paths in LEO satellite networks. Specifically, an ISL with longer duration $l_{ij}$ has lower probability of failure during transmission, and higher capacity $c_{ij}$ directly translates to a higher achievable data rate via Shannon's formula. Therefore, the proposed utility $U_{ij}$ serves as a reliability-capacity proxy whose maximization corresponds to selecting paths with both lower failure probability and higher transmission rate, both of which directly increase end-to-end throughput. This relationship is further confirmed empirically by Fig.~3, shown below, which demonstrates that the proposed algorithm selects ISLs with longer durations and higher SINR values compared to DR and STR.
+
+\begin{quote}
+\setcounter{figure}{2}
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.9\linewidth]{Image/fig3_combined_box.eps}
+\caption{Comparison of average ISL duration and SINR of paths selected by each method.}
+\end{figure}
+\end{quote}
+
+For your convenience, the relevant addition in Section~IV-B is provided below.
+
+\begin{quote}
+\textcolor{blue}{ISLs with higher utility have longer durations and higher SINR values, which reduce link failure probability and directly improve throughput and packet loss rate, as confirmed in Fig.~3.}
+\end{quote}
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 2.}
+The GNN is trained using labels derived from the LP relaxation of the original INLP. The validity of this approach hinges on the tightness of the relaxation.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Please refer to our response to Editor Comment~2.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 3.}
+The proposed architecture is highly centralized, requiring all link measurements to be reported to and processed by a single LMCC. Moreover, the LMCC is a single point of failure and a computational bottleneck.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Please refer to our response to Editor Comment~3. The centralized LMCC architecture is consistent with existing snapshot-based routing schemes~\cite{han2023time}, where the LMCC is deployed on a cloud server with high reliability. Exploring distributed LMCC architectures is a direction for future work.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 4.}
+The link-aware property is narrowly defined as knowledge of duration and capacity. Other critical state information such as delay variance or short-term link stability/error rate is not considered.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We appreciate this comment. The proposed utility function already captures the key factors affecting short-term link reliability through both ISL duration and capacity, as detailed below.
+
+The duration utility $U_{ij}^l = l_{ij}/T$ directly reflects short-term link stability. Specifically, $l_{ij} = |d_{ij}/\dot{d}_{ij}|$ is computed from the current relative velocity between satellites and estimates the remaining time until each ISL becomes unavailable. ISLs approaching failure therefore receive lower $l_{ij}$ values and correspondingly lower $U_{ij}$, which penalizes unstable links without requiring per-packet measurements.
+
+The capacity utility $U_{ij}^c$ captures the current signal quality via SINR, which has a direct relationship with key performance metrics such as link rate and bit error rate~\cite{cao2025dense}. ISLs with low SINR therefore receive low $U_{ij}^c$ values, which avoids selecting paths likely to suffer from high error rates.
+
+In addition, the GNN trained on these features further identifies ISLs prone to disruption from their structural and physical characteristics through the pruning step, providing an additional layer of stability-aware filtering before routing.
+
+Therefore, the proposed framework implicitly addresses short-term link stability and signal quality through $l_{ij}$ and $c_{ij}$. Incorporating explicit delay variance or per-packet error rate measurements would require per-packet monitoring at each satellite, which we identify as a direction for future work.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 5.}
+It is suggested to introduce the following recent works:\\
+{[R1]} ``Direct-to-smartphone for 6G NTN,'' \textit{IEEE Network}, 2024.\\
+{[R2]} ``Multi-objective deep reinforcement learning for multi-beam satellite communications,'' \textit{China Communications}, 2022.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Thank you for the recommendation. We have added both references to the Introduction section of the revised manuscript. \cite{he2024direct} discusses the technical challenges of direct-to-smartphone connectivity in 6G NTN, where smart inter-satellite networking and routing are identified as enabling technologies for high-timeliness services. \cite{he2022multi} addresses time-frequency resource allocation for multi-beam satellite communications using deep reinforcement learning, which underscores the growing complexity of resource management in large-scale satellite systems. For your convenience, the relevant addition in Section~I is provided below.
+
+\begin{quote}
+\textcolor{blue}{In the aerospace industry, several commercial enterprises, such as SpaceX, Amazon, and OneWeb, have constructed LEO mega-constellations (LMCs) to ensure ubiquitous coverage and support massive user access with high data rates~\cite{wang2022mega},~\cite{cao2025dense},~\cite{he2024direct},~\cite{he2022multi}.}
+\end{quote}
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 6.}
+The weighting factor $\beta$ is set to 0.5 without justification.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Please refer to our response to Editor Comment~4. As shown in Table~I of the revised manuscript, we conducted a sensitivity analysis on $\beta \in \{0.1, 0.3, 0.5, 0.7, 0.9\}$ at 2.8~Gbps and 100~s. Throughput peaks at $\beta = 0.5$ ($1.589$~Gbps, $20.8\%$ PLR) and decreases at both extremes ($1.529$~Gbps at $\beta = 0.1$ and $1.510$~Gbps at $\beta = 0.9$). This confirms that balanced weighting of ISL duration and capacity at $\beta = 0.5$ outperforms either duration-dominant or capacity-dominant configurations.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 7.}
+In practice, the network statistics may change over time due to constellation maneuvers or changing traffic patterns, leading to model drift.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We appreciate this practical observation. We have added a discussion in Section~III-A and clarified the ISL state computation in Section~II-A. In our system, the edge features $\mathbf{e}_{ij} = [\tilde{d}_{ij}, \tilde{l}_{ij}]^\top$ are recomputed at every snapshot interval using the current SINR measurements and satellite positions and velocities derived from TLE data. Specifically, $l_{ij} = |d_{ij}/\dot{d}_{ij}|$ captures the predicted remaining duration of each ISL based on the current relative velocity between satellites, so $\tilde{l}_{ij} = l_{ij}/T$ reflects both the current link state and its future stability. Since $l_{ij}$ and $c_{ij}$ are recomputed at every snapshot interval, the GNN input features automatically adapt to changes in signal conditions and satellite dynamics without requiring model retraining. For significant structural changes such as new satellite deployments, offline retraining with updated TLE data is performed, which we identify as future work. For your convenience, the relevant addition in Section~II-A is provided below.
+
+\begin{quote}
+\textcolor{blue}{Since $l_{ij} = |d_{ij}/\dot{d}_{ij}|$ is computed from the current satellite positions and velocities at each snapshot interval, $\tilde{l}_{ij} = l_{ij}/T$ reflects both the current ISL state and its predicted future stability. Since $l_{ij}$ and $c_{ij}$ are recomputed at every snapshot interval, $U_{ij}$ always reflects the current link conditions without requiring model retraining.}
+\end{quote}
+
+\newpage
+\vspace{0.1cm} \noindent
+\section*{\large Responses to Reviewer 2's Comments}
+
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 1.}
+How does the GNN model perform under abrupt topological changes, such as satellite failures or link disruptions caused by interference?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Thank you for this comment. Our system operates on a snapshot-based architecture with interval $T = 5$~min. Under abrupt topological changes such as satellite failures, the affected ISLs are removed from the network graph at the next snapshot update, and the GNN is applied to the updated graph to determine new routing paths. The maximum routing disruption caused by an abrupt failure is therefore bounded by one snapshot interval. For link disruptions caused by interference, the SINR measurements collected at the beginning of each snapshot reflect the current interference conditions, and ISLs with degraded SINR are assigned lower utility values and are less likely to be retained in the pruned graph $\mathcal{G}'$.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 2.}
+Please provide experimental results showing the impact of varying $\tau$ within the [0, 1] range on end-to-end throughput.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We greatly appreciate this comment. We have added a sensitivity analysis for $\tau$ in Section~IV-B of the revised manuscript. The results are shown in Table~I of the revised manuscript (reproduced in our response to Editor Comment~4). We observe that $\tau = 0.5$ achieves the best trade-off between graph sparsity and routing performance, with a throughput of $1.589$~Gbps and a PLR of $20.8\%$. At $\tau \leq 0.3$, the pruning is too loose and the throughput approaches the w/o-Pruning baseline ($1.461$~Gbps, $26.0\%$ PLR), confirming that very loose pruning retains too many low-utility ISLs. At $\tau \geq 0.7$, excessive pruning disconnects the routing graph for nearly all source--destination pairs, causing routing failures with PLR approaching $100\%$, indicating that $\tau = 0.5$ is the safe operating point.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 3.}
+Please discuss whether the algorithm can support dynamic $\beta$ adjustment or if an automated learning-based weight acquisition is feasible.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We agree that this is an interesting direction. In the current formulation, $\beta$ is a user-defined parameter that allows the operator to balance ISL duration and capacity according to the operational requirements of the network. As shown in Table~I of the revised manuscript, $\beta = 0.5$ provides the best performance under our simulation setup, while different operating conditions may benefit from different weighting. Automated learning-based selection of $\beta$ conditioned on real-time network states is a natural extension that we leave for future work.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 4.}
+Does the snapshot-based GNN prediction suffer from performance degradation as the constellation completes multiple orbital periods?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Thank you for this comment. Our GNN takes link state features ($l_{ij}$, $c_{ij}$, structural node features) as input, which are recomputed at every snapshot interval from the current satellite positions and SINR measurements, as detailed in our response to Editor Comment~5. Since the input features always reflect the current link conditions, the trained GNN generalizes across snapshot intervals without retraining, and performance degradation is not expected over multiple orbital periods within the same orbital configuration. Significant constellation changes such as new satellite deployments would require offline retraining with updated TLE data, which we identify as future work.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 5.}
+This paper would benefit from discussion of ``Anti-Jamming Routing Based Graph Neural Network for Satellite Constellation Defense.''
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Thank you for the recommendation. We have added a discussion of~\cite{zhang2026anti} in Section~IV of the revised manuscript. The work in~\cite{zhang2026anti} proposes a GNN-based routing scheme designed for adversarial jamming scenarios in satellite constellation defense, where the objective is to maintain connectivity under intentional interference attacks. In contrast, our work focuses on link-state-aware routing under natural ISL dynamics caused by orbital mechanics in multi-tier LMCs, without adversarial interference. While both works apply GNNs to satellite routing, the problem settings, objectives, and network models are fundamentally different. We have cited~\cite{zhang2026anti} in Section~IV to acknowledge this concurrent GNN-based routing work and clarify the distinction from our approach.
+
+\newpage
+\vspace{0.1cm} \noindent
+\section*{\large Responses to Reviewer 3's Comments}
+
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 1.}
+In Eq.~(8), $N_0$ is described as the noise power spectral density, while in the SINR expression it is directly added to the interference terms, which suggests that total noise power is required.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Thank you for pointing this out. We have corrected Eq.~(8) in the revised manuscript. The noise power spectral density $N_0$ is multiplied by the bandwidth $B$ to obtain the total noise power $N_0 B$, which is then added to the interference terms. The simulation parameter $N_0 = -174$~dBm/Hz with $B = 500$~MHz gives a total noise power of $-87$~dBm, which is consistent with our simulation settings. For your convenience, the corrected expression in Section~II-A is provided below.
+
+\begin{quote}
+\textcolor{blue}{
+\begin{equation}
+\mathrm{SINR}_{ij} = \frac{P_o G_t G_r b_{ij}^2}{PL(d_{ij})\left(N_0 B + I_{j}^{\mathrm{intra}} + I_{j}^{\mathrm{inter}}\right)}, \tag{8}
+\end{equation}
+where $N_0$ is the noise power spectral density, $B$ is the available bandwidth, and $N_0 B$ denotes the total noise power.}
+\end{quote}
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 2.}
+The use of softmax normalization for link capacity in Eq.~(10) is interesting but its motivation is not sufficiently explained.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We agree that additional motivation is needed. We have added an explanation in Section~II-B of the revised manuscript. Min-max normalization maps capacity to $[0,1]$ using only the global minimum and maximum values, making it sensitive to a single ISL with an extreme capacity value, which can compress all other utility scores into a narrow range. Softmax normalization uses the full distribution of capacity values across all ISLs, producing a well-bounded distribution that suppresses the outlier sensitivity of min-max normalization and provides a stable relative ranking of link capabilities.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 3.}
+The manuscript repeatedly states ``total ISL utility'' but Eq.~(12a) is written as a ratio, which appears closer to average utility per hop.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We thank the reviewer for identifying this inconsistency. The objective in Eq.~(12a) is formulated as $\sum_{(i,j)} x_{ij}^{sd} U_{ij} / \sum_{(i,j)} x_{ij}^{sd}$, which divides the accumulated link utility by the number of selected hops. This quantity represents the average utility per hop along the routing path, not the total sum. We have revised all occurrences of ``total ISL utility'' to ``average ISL utility per hop'' throughout the manuscript to accurately reflect this ratio-based objective.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 4.}
+The original formulation is ratio-based, while the LP removes the denominator. The paper does not sufficiently explain why this surrogate label-generation process is appropriate.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Please refer to our response to Editor Comment~2. We further clarify that the LP relaxation is used only to generate binary labels for GNN training, not to make routing decisions. Specifically, the LP identifies consistently utilized ISLs via the utilization rate $\mathcal{I}_{ij}$ in Eq.~(20), which reflects the structural importance of each ISL across all source--destination pairs. The binary label $y_{ij} = \mathbb{1}[\mathcal{I}_{ij} \geq \tau_{\text{train}}]$ in Eq.~(21) captures whether an ISL is structurally important, which depends on its frequency of selection across pairs rather than the specific objective formulation. Therefore, the LP-derived labels remain appropriate for GNN training even when the original objective is ratio-based, since both formulations identify the same set of high-utility ISLs that are structurally important for routing.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 5.}
+The current comparisons are limited to DR and STR. Stronger learning-based baselines should be included.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Please refer to our response to Editor Comment~6.
+
+\newpage
+\vspace{0.1cm} \noindent
+\section*{\large Responses to Reviewer 4's Comments}
+
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 1.}
+How well does the GNN generalize to unseen network conditions such as different satellite densities, orbital configurations, or traffic patterns?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We have added a generalization discussion in Section~III-A of the revised manuscript and address each scenario separately.
+
+Regarding different traffic patterns: the GNN input features consist solely of structural and physical link features, and do not include traffic load or flow statistics. The GNN pruning decisions are therefore independent of traffic patterns, and the trained model generalizes directly to new traffic conditions without retraining.
+
+Regarding different snapshot intervals within the same constellation: since LEO orbital mechanics are deterministic and periodic, the network topology repeats with the orbital period. The trained GNN generalizes across snapshot intervals within the same TLE configuration without retraining.
+
+Regarding different satellite densities or orbital configurations (e.g., from Starlink to OneWeb): the structural node features ($|\mathcal{N}_i|$, $\mathrm{clust}(i)$, $\mathrm{bc}(i)$) change with the constellation topology, so retraining with updated TLE data would be required. We identify this cross-scenario generalization as future work.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 2.}
+How does varying $\tau$ influence connectivity, computational complexity, and routing performance?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Please refer to our response to Reviewer~2, Comment~2 for routing performance and connectivity. Regarding computational complexity, the GNN inference has complexity $O(L|\mathcal{E}|d)$, where $L=3$ layers and $d=64$ hidden dimension, consistent with standard message-passing GNNs~\cite{rao2025dynamic}. The utility-based heuristic routing operates with priority queue expansion, with complexity $O(|\mathcal{S}|\log|\mathcal{S}| + |\mathcal{E}'|)$ per source--destination pair, where $|\mathcal{E}'| \leq |\mathcal{E}|$ is the pruned edge set. Varying $\tau$ only changes $|\mathcal{E}'|$, not the per-snapshot complexity of GNN inference or heuristic routing.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 3.}
+Can the proposed framework support adaptive or learning-based adjustment of $\beta$?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Please refer to our response to Reviewer~2, Comment~3.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 4.}
+Include comparisons with more advanced methods such as GRLR and Anti-Jamming GNN routing.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Please refer to our response to Editor Comment~6. We have added GRLR~\cite{zhang2025grlr} as a new benchmark method. The Anti-Jamming GNN~\cite{zhang2026anti} addresses adversarial routing for constellation defense, which is a different problem setting from ours. We have noted it as concurrent GNN-based routing work in Section~IV and clarified the distinction from our approach.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 5.}
+How sensitive is routing performance to the choice of snapshot interval $T$?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Thank you for this comment. We have added a sensitivity analysis on $T \in \{1, 5, 10, 30\}$~min in Section~IV-B and Table~I of the revised manuscript. The results at 2.8~Gbps and 100~s are reproduced below.
+
+\begin{center}
+\begin{tabular}{lcccc}
+\hline
+$T$ (min)         & 1     & \textbf{5}     & 10    & 30    \\
+\hline
+Throughput (Gbps) & 1.589 & \textbf{1.589} & 0.863 & 0.319 \\
+PLR (\%)          & 20.8  & \textbf{20.8}  & 57.0  & 84.1  \\
+\hline
+\end{tabular}
+\captionof{table}{$T$ sensitivity (2.8~Gbps, 100~s).}
+\end{center}
+
+We observe that throughput remains at $1.589$~Gbps for $T \leq 5$~min because the underlying TLE-derived ISL state has minute-level granularity, so further reducing $T$ provides no throughput benefit. However, the signaling rate $N \times |\mathcal{N}_i|/T$ scales inversely with $T$: reducing $T$ from $5$~min to $1$~min increases the signaling overhead by $5\times$ without any throughput improvement, which is impractical. Beyond $T = 5$~min, throughput drops sharply to $0.863$~Gbps at $T = 10$~min and $0.319$~Gbps at $T = 30$~min, with PLR rising to $57.0\%$ and $84.1\%$, respectively, as routing decisions become outdated relative to the actual ISL state. This confirms that $T = 5$~min is the practical balance between routing accuracy and signaling overhead.
+
+\newpage
+\vspace{0.1cm} \noindent
+\section*{\large Responses to Reviewer 5's Comments}
+
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 1.}
+The centralized approach limits practicality due to overhead from collecting information from satellites through local controllers.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Please refer to our response to Editor Comment~3.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 2.}
+Why did the authors choose GNN, and why not another AI technique like RL?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We have added a justification in Section~III-A of the revised manuscript. GNN is chosen over RL for the following reasons. First, unlike RL-based approaches that require sequential agent-environment interactions for training~\cite{rao2025dynamic}, the GNN uses supervised learning with LP-derived labels performed offline, which does not depend on real-time environment feedback and is more stable in time-varying satellite topologies. Second, GNN inference involves a lightweight forward pass through $L=3$ graph convolutional layers, which produces deterministic per-link predictions suitable for real-time ISL pruning within the snapshot interval. Third, the neighborhood aggregation mechanism of GNNs explicitly captures multi-hop topological dependencies~\cite{rao2025dynamic}, which is critical for identifying unstable ISLs in multi-tier constellations. For your convenience, the relevant addition in Section~III-A is provided below.
+
+\begin{quote}
+\textcolor{blue}{Unlike reinforcement learning (RL)-based approaches that require sequential agent-environment interactions for training~\cite{rao2025dynamic}, the GNN uses supervised learning with LP-derived labels, which produces deterministic per-link predictions with low inference latency.}
+\end{quote}
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 3.}
+If the GNN step is removed and the heuristic is applied to the non-pruned graph, will it yield similar results?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Please refer to our response to Editor Comment~6. As shown in the updated results in Table~I, removing GNN pruning degrades throughput by 8.8\% (from 1.589~Gbps to 1.461~Gbps) and increases the PLR by 5.2\% (from 20.8\% to 26.0\%) at 2.8~Gbps and 100~s in Scenario~2, confirming the contribution of GNN-based pruning. In addition, the GNN-based pruning removes approximately 50\% of ISLs on average across snapshots, substantially reducing the search space for the heuristic Dijkstra and lowering the routing-time complexity. This dual benefit, throughput improvement combined with major search-space reduction, confirms the value of GNN-based pruning over operating on the full graph.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 4.}
+Comparisons with the optimal solution, at least for a small scale, should be added.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We have added a small-scale optimality comparison in Section~IV-B (Table~II of the revised manuscript). Since enumerating all simple paths in a 1{,}500-satellite network is computationally infeasible, we evaluate on reduced 3-tier networks of $N \in \{30, 50, 70\}$ satellites generated using the same Walker-delta procedure and ISL utility model as the main simulation. For each network, we randomly sample 500 source--destination pairs and enumerate all simple paths up to 8 hops; for each pair, the path with the maximum average ISL utility per hop is taken as the optimal solution. The proposed algorithm achieves $95.7\%$, $92.6\%$, and $93.0\%$ of the optimal throughput at $N = 30, 50, 70$, respectively ($93.8\%$ on average), with PLR within $0.9$, $1.9$, and $1.6$ percentage points of the optimal. These results confirm that the GNN-based pruning combined with utility-based heuristic routing achieves near-optimal performance, while at full scale ($N=1{,}500$) the pruning further reduces the routing search space by approximately $50\%$ on average, providing substantially lower computational complexity than enumerating all simple paths or solving the INLP directly.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 5.}
+Is the GNN generalizable to different topologies and sizes of LEO networks?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Please refer to our response to Reviewer~4, Comment~1.
+
+\newpage
+\vspace{0.1cm} \noindent
+\section*{\large Responses to Reviewer 6's Comments}
+
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 1.}
+How does the proposed ISL utility metric fundamentally advance beyond existing multi-tier routing methods?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We have strengthened the discussion on the distinction from existing multi-tier routing methods in Section~I of the revised manuscript. Existing multi-tier routing methods~\cite{hu2022software},~\cite{yan2024logic},~\cite{huang2026dynamic} focus on topology-based path selection and do not model ISL states such as duration and capacity between different tiers. The proposed ISL utility explicitly captures ISL duration, which quantifies link stability under relative motion between orbital tiers, and ISL capacity, which accounts for SINR differences due to altitude-dependent interference. No existing multi-tier routing work jointly considers both properties.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 2.}
+How computationally expensive is solving the LP for each training snapshot? Why not use its solution directly for routing?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Thank you for this comment. We have added a discussion in Section~III-A. The surrogate sum-objective LP is solved offline during training using Gurobi, so its computational cost does not affect runtime routing. Although the LP relaxation yields integer-valued solutions due to total unimodularity~\cite{zhao2022link}, the original ratio-based INLP in $\mathcal{P}$ is NP-hard due to its fractional programming structure with binary variables~\cite{guo2024lightweight}. Even using the sum-objective LP as a surrogate at runtime, solving it at every snapshot interval for a 1,500-satellite constellation with many source--destination pairs is not tractable for real-time routing. The GNN learns the ISL retention patterns from LP-derived labels offline and provides instant per-link pruning decisions at runtime, replacing the need to solve any optimization problem at each snapshot.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 3.}
+How sensitive is the algorithm's performance to the threshold $\tau$?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Please refer to our response to Reviewer~2, Comment~2.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 4.}
+Why are state-of-the-art satellite routing methods not included in the comparison?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Please refer to our response to Editor Comment~6.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 5.}
+How does the algorithm handle scenarios where a longer path with consistently high-utility ISLs is preferable to a shorter path with one low-utility link?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We have added a clarification in Section~III-B of the revised manuscript. The priority function $f(i) = (g(i) + \psi(i)) / (H_{si} + 1)$ normalizes accumulated utility by hop count, so a longer path with consistently high-utility ISLs achieves a higher $f$ value than a shorter path with a low-utility bottleneck link. For example, consider an intermediate satellite $i$ reached after 2 hops with accumulated utility $g(i) = 1.8$ and best next-hop utility $\psi(i) = 0.9$, giving $f(i) = (1.8 + 0.9)/(2+1) = 0.9$. In contrast, a satellite on a shorter path reached after 1 hop with $g = 0.5$ and $\psi = 0.5$ gives $f = (0.5+0.5)/(1+1) = 0.5$, correctly assigning lower priority to the shorter but lower-utility path. For your convenience, the relevant addition in Section~III-B is provided below.
+
+\begin{quote}
+\textcolor{blue}{It is noted that $f(i)$ in Eq.~(23) balances path utility and hop count: it assigns a higher priority to paths whose average per-hop utility is high relative to their length, which penalizes paths that achieve shorter hop counts at the expense of low-utility ISLs.}
+\end{quote}
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 6.}
+In the abstract, ``GNN-based heuristic routing algorithm'' is misleading since GNN is used for pruning, not routing.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Thank you for pointing this out. The original phrasing incorrectly implied that the GNN directly performs routing, whereas the GNN is used only for link pruning to reduce the search space, and the subsequent heuristic algorithm performs the actual path selection on the pruned graph. We have corrected the abstract to clarify this two-stage structure. For your convenience, the relevant revision in the Abstract is provided below.
+
+\begin{quote}
+\textcolor{blue}{we propose a two-stage routing algorithm that first prunes unstable ISLs using a GNN and then selects optimal end-to-end paths on the pruned graph using a utility-based heuristic.}
+\end{quote}
+
+\newpage
+\vspace{0.1cm} \noindent
+\section*{\large Responses to Reviewer 7's Comments}
+
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 1.}
+Why can $l_{ij}$ in Eq.~(4) be interpreted as the link duration? Can normalization by $T$ guarantee $U_{ij}^l \in [0,1]$?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We have added an explanation in Section~II-A of the revised manuscript. The quantity $|d_{ij}/\dot{d}_{ij}|$ gives the estimated time remaining until the ISL distance exceeds the maximum ISL distance $d_{\max}$, which corresponds to the ISL duration. Regarding the range of $U_{ij}^l$: for intra-tier ISLs with low relative velocity, $l_{ij}$ may exceed $T$, giving $U_{ij}^l > 1$. We have clarified that $U_{ij}^l$ is used as a relative comparison metric rather than a strict probability, so values exceeding 1 for intra-tier ISLs do not affect the routing decision, as the objective is to rank ISLs by their relative utility. For your convenience, the relevant addition in Section~II-A is provided below.
+
+\begin{quote}
+\textcolor{blue}{Here, $|d_{ij}/\dot{d}_{ij}|$ estimates the remaining time until the ISL distance exceeds the maximum ISL distance $d_{\max}$, which provides a first-order approximation of the ISL duration.}
+\end{quote}
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 2.}
+Is the inter-tier interference model sufficient to capture the impact of relative motion on ISL capacity, especially Doppler-induced impairments?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We have added a discussion in Section~IV-A of the revised manuscript. Doppler-induced frequency offsets in LEO ISLs are compensated using standard frequency-tracking methods~\cite{darsena2024hybrid},~\cite{cao2025dense}. The dominant factors affecting inter-tier ISL capacity are the altitude-dependent signal attenuation captured by $\eta(h_j, h_{j'})$ and the inter-tier SINR in Eq.~(8). For your convenience, the relevant addition in Section~IV-A is provided below.
+
+\begin{quote}
+\textcolor{blue}{Doppler-induced frequency offsets in LEO ISLs are compensated using standard frequency-tracking methods~\cite{darsena2024hybrid}, and are assumed to be well-managed in standard LEO ISL operation~\cite{cao2025dense}.}
+\end{quote}
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 3.}
+Why does $\eta$ affect only the interference term, while cross-tier loss is not considered in the desired signal term?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We have added a clarification in Section~II-A of the revised manuscript. The factor $\eta(h_j, h_{j'})$ models the reduced antenna gain at the receiver from inter-tier interferers arriving off the intended beam direction, since the receiving antenna is aligned to the desired intra-tier signal. For the desired signal between satellites $i$ and $j$, both are in the same tier and the antenna is intentionally aligned, so no additional attenuation applies. For your convenience, the relevant addition in Section~II-A is provided below.
+
+\begin{quote}
+\textcolor{blue}{The factor $\eta$ is applied to the inter-tier interference term only, since the receiving antenna is aligned to the desired intra-tier signal, whereas inter-tier interferers arrive from off-boresight directions where the antenna gain is reduced~\cite{cao2025dense}.}
+\end{quote}
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 4.}
+Why is the denominator in Eq.~(12) removed in Eq.~(19)?
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+Please refer to our response to Editor Comment~2 and Reviewer~3, Comment~4.
+
+\vspace{10mm}
+\noindent \fbox{ \parbox{0.95\textwidth}{
+{\bf Comment 5.}
+Please clearly define how throughput and packet loss rate are calculated and clarify the relationship between utility and these metrics.
+}}
+
+\vspace{5mm}
+{\bf (Response)}
+We have added definitions at the beginning of Section~IV-B. Throughput is defined as the total successfully delivered data volume per unit time across all source--destination pairs, and packet loss rate is defined as the fraction of packets that fail to reach the destination due to link failures. As shown in~\cite{han2023time}, ISL states including link duration and capacity directly affect the reliability of routing paths, so ISLs with higher $U_{ij}$ have longer durations and higher capacity, which reduce link failure probability and directly increase throughput, as confirmed in Fig.~3. For your convenience, the relevant addition in Section~IV-B is provided below.
+
+\begin{quote}
+\textcolor{blue}{ISLs with higher utility have longer durations and higher SINR values, which reduce link failure probability and directly improve throughput and packet loss rate, as confirmed in Fig.~3.}
+\end{quote}
+
+\vspace{1cm}
+\noindent\rule{\textwidth}{0.5mm}
+
+\noindent We sincerely appreciate all the constructive feedback from the Editor and reviewers. We hope that the revised manuscript meets the publication standards of IEEE Wireless Communications Letters.
+
+\bibliographystyle{IEEEtran}
+\bibliography{ref}
+
+\end{document}

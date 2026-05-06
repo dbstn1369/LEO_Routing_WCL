@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Large data files (exceed GitHub 100MB limit)
+data/position.mat
+results_s1/paths_graphs_s1.pkl
+
+# Logs
+*.log

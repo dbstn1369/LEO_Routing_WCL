@@ -1,0 +1,60 @@
+\documentclass[lettersize,journal]{IEEEtran}
+\usepackage{amsmath, amsfonts, amssymb, amstext}
+\usepackage{physics}
+\usepackage{siunitx}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[font=footnotesize, labelsep=period, justification=raggedright, singlelinecheck=false]{caption}
+\usepackage{subcaption}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+\usepackage{url}
+\usepackage{verbatim}
+\usepackage{cite}
+\usepackage{stfloats}
+\usepackage{balance}
+\usepackage{soul}
+\hyphenation{op-tical net-works semi-conduc-tor IEEE-Xplore}
+\newcommand{\hlc}[2][yellow]{{\sethlcolor{#1} \hl{#2}}}
+\colorlet{soulgreen}{green!30}
+\newcommand\slee[1]{\hlc[soulgreen]{SL: -- #1 --}}
+\colorlet{soulblue}{blue!30}
+\newcommand\hpark[1]{\hlc[soulblue]{HBP: -- #1 --}}
+\newcommand\mcc[2]{\multicolumn{1}{>{}p{#1}|}{#2}}
+\begin{document}
+\title{Link-Aware Routing in Multi-Tier LEO Mega-Constellations}
+\author{Yoonsoo Choi, Anna Cho, Chang Kyung Kim, and SuKyoung Lee,~\IEEEmembership{Member,~IEEE}
+\thanks{The authors are with the Department of Computer Science and Engineering, Yonsei University, Seoul, Republic of Korea (e-mail: yoonsoo@yonsei.ac.kr; annacho6@yonsei.ac.kr; ckim48@yonsei.ac.kr; sklee@yonsei.ac.kr).}
+}
+\markboth{IEEE Wireless Communications Letters,~Vol.~XX, No.~X, March~2026}%
+{Yoonsoo Choi, \MakeLowercase{\textit{et al.}}: Link-Aware Routing in Multi-Tier LEO Mega-Constellations}
+\maketitle
+
+\begin{abstract}
+In multi-tier low-Earth orbit (LEO) mega-constellations, the mobility of satellites across different orbital altitudes leads to dynamic changes in network topology and inter-satellite link (ISL) states, including ISL duration and capacity. These changes often result in unstable connectivity and disrupted end-to-end data transmission. To address this issue, we formulate a routing optimization problem to determine the optimal ISL path between two end users by maximizing the \textcolor{blue}{average ISL utility}, considering both ISL duration and capacity. To solve this problem, we propose a \textcolor{blue}{two-stage routing algorithm that first prunes unstable ISLs using a graph neural network (GNN) and then selects optimal end-to-end paths on the pruned graph using a utility-based heuristic}. Simulation results demonstrate that the proposed algorithm achieves higher throughput and a lower packet loss rate compared to benchmark methods.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Multi-tier LEO mega-constellations, routing, graph neural networks, inter-satellite link (ISL), ISL utility, throughput.
+\end{IEEEkeywords}
+
+\vspace{-0.1cm}
+\input{1. intro}
+\vspace{-0.1cm}
+\input{2. system model, problem}
+\input{3. algorithm}
+\input{4. Simulation}
+\section{Conclusion}
+In this letter, we proposed a link-aware routing algorithm for multi-tier LMCs that maximizes the \textcolor{blue}{average ISL utility} via GNN-based ISL pruning and utility-based heuristic routing on the pruned graph. Simulation results demonstrate that the proposed algorithm outperforms the benchmark methods in terms of packet loss rate and throughput.
+
+\bibliographystyle{IEEEtran}
+\bibliography{ref}
+\end{document}

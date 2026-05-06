@@ -1,0 +1,76 @@
+\section{Link-Aware Routing Algorithm}
+\label{sec:proposed_scheme}
+
+Problem $\mathcal{P}$ is an Integer Non-Linear Programming (INLP) problem due to the binary variables $x_{ij}^{sd}$ and the non-convex objective function. This problem is known to be NP-hard because its search space grows exponentially with the number of ISL combinations across all pairs in $\mathcal{R}$~\cite{guo2024lightweight}. Consequently, finding an optimal solution directly is \textcolor{blue}{not tractable for real-time optimization} in LMCs~\cite{huang2026dynamic}. To address this, we propose a link-aware routing algorithm that reduces the search space before path selection. Specifically, our GNN model predicts the retention probability $\hat{p}_{ij}$ to prune unstable ISLs and construct a pruned graph $\mathcal{G}'$. Our heuristic algorithm then determines the final routing paths $P_{sd}^*$ on $\mathcal{G}'$ that maximize the \textcolor{blue}{average ISL utility} defined in Eq.~\eqref{eq:obj}.
+
+\subsection{GNN-Based Link Pruning}
+\label{subsec:learning}
+
+We use a GNN because its neighborhood aggregation mechanism explicitly \textcolor{blue}{models} multi-hop topological dependencies\textcolor{blue}{, which are difficult to handle with} conventional heuristic algorithms~\cite{rao2025dynamic}. \textcolor{blue}{Unlike reinforcement learning (RL)-based approaches that require sequential agent-environment interactions for training~\cite{rao2025dynamic}, the GNN uses supervised learning with LP-derived labels generated offline, which produces deterministic per-link predictions with low inference latency.} By aggregating state information from surrounding satellites, the GNN predicts the retention probability $\hat{p}_{ij}$ for each ISL. Consequently, unstable ISLs are pruned based on $\hat{p}_{ij}$ to construct the pruned graph $\mathcal{G}'$.
+
+
+\subsubsection{Feature Construction and Message Propagation}
+
+Let $\mathcal{E}_i = \{(u,v) \in \mathcal{E} : u,v \in \mathcal{N}_i\}$ denote the set of ISLs among the neighbors of satellite $i$. The clustering coefficient $\mathrm{clust}(i)$ and betweenness centrality $\mathrm{bc}(i)$ are defined as
+\begin{equation}
+    \mathrm{clust}(i) = \frac{2 |\mathcal{E}_i|}{|\mathcal{N}_i|(|\mathcal{N}_i|-1)}, \quad \mathrm{bc}(i) = \sum_{p \neq q,\, p \neq i,\, q \neq i} \frac{n_{pq}(i)}{n_{pq}},
+\end{equation}
+where $n_{pq}$ is the total number of shortest paths between nodes $p$ and $q$, and $n_{pq}(i)$ is the number of those paths passing through satellite $i$.
+Let $\mathbf{u}_i^{(0)}$ and $\mathbf{e}_{ij}$ denote the initial satellite and link feature vectors, respectively, defined as
+\begin{equation}
+    \mathbf{u}_i^{(0)} = [\, |\mathcal{N}_i|,\, \mathrm{clust}(i),\, \mathrm{bc}(i),\, h_i \,]^\top, \quad \mathbf{e}_{ij} = [\, \tilde{d}_{ij},\, \tilde{l}_{ij} \,]^\top,
+\end{equation}
+where $|\mathcal{N}_i|$ denotes the degree of satellite $i$, $h_i$ denotes the orbital altitude, $\tilde{d}_{ij} = d_{ij}/d_{\max}$ is the normalized distance, and $\tilde{l}_{ij} = l_{ij}/T$ is the normalized ISL duration. Here, $d_{\max}$ denotes the maximum possible ISL distance within the network.
+Let $\mathbf{m}_{ij}^{(r)}$ denote the intermediate message from neighbor $j$ to satellite $i$ at iteration $r \in \{0, 1, \dots, L-1\}$. To capture topological dependencies during the message-passing phase, $\mathbf{m}_{ij}^{(r)}$ combines the features of the neighboring satellite and the connecting ISL as
+\begin{equation} \label{eq:message}
+    \mathbf{m}_{ij}^{(r)} = \mathrm{ReLU} \Big( \mathbf{W}_M^{(r)} [\, \mathbf{u}_j^{(r)} \,\|\, \mathbf{e}_{ij} \,] + \mathbf{b}_M^{(r)} \Big),
+\end{equation}
+where $\mathbf{W}_M^{(r)}$ and $\mathbf{b}_M^{(r)}$ are the weight matrix and bias vector for message generation, respectively, $\|$ represents vector concatenation, and $L$ is the number of message-passing iterations.
+The updated satellite embedding $\mathbf{u}_i^{(r+1)}$ is obtained by aggregating the messages as
+\begin{equation} \label{eq:satellite_update}
+    \mathbf{u}_i^{(r+1)} = \sigma \Bigg( \mathbf{W}_S^{(r)} \mathbf{u}_i^{(r)} + \frac{1}{|\mathcal{N}_i|} \sum_{j \in \mathcal{N}_i} \mathbf{m}_{ij}^{(r)} \Bigg),
+\end{equation}
+where $\mathbf{W}_S^{(r)}$ is the learnable weight matrix for self-state transformation to preserve the satellite's intrinsic topological features during message aggregation, and $\sigma(\cdot)$ is a non-linear activation function. After $L$ iterations, using $\mathbf{u}_i^{(L)}$ obtained from Eq.~\eqref{eq:satellite_update}, the retention probability $\hat{p}_{ij}$ for each ISL is computed via a multi-layer perceptron (MLP) as
+\begin{equation} \label{eq:readout}
+    \hat{p}_{ij} = \mathrm{Sigmoid} \Big( \mathbf{w}_p^\top \mathrm{ReLU} \big( \mathbf{W}_p [\, \mathbf{u}_i^{(L)} \,\|\, \mathbf{u}_j^{(L)} \,\|\, \mathbf{e}_{ij} \,] + \mathbf{b}_p \big) \Big),
+\end{equation}
+where $\mathbf{W}_p$, $\mathbf{b}_p$, and $\mathbf{w}_p^\top$ are the learnable parameters of the MLP, and $\mathrm{Sigmoid}(\cdot)$ bounds the probability $\hat{p}_{ij} \in (0,1)$.
+
+\subsubsection{Training and Pruning Optimization}
+
+To generate ground-truth labels for GNN training, we solve a relaxed LP formulation of $\mathcal{P}$, where the binary variables $x_{ij}^{sd}$ are relaxed to continuous variables $\omega_{ij}^{sd} \in [0, 1]$. $\mathcal{P}$ is reformulated as the following LP:
+\begin{equation} \label{eq:lp_relaxation}
+\begin{aligned}
+\mathcal{P}_{\text{LP}}: \max_{\{\omega_{ij}^{sd}\}} & \sum_{(s,d) \in \mathcal{R}} \sum_{(i,j) \in \mathcal{E}} \omega_{ij}^{sd} U_{ij} \\
+\text{s.t.} \quad & \eqref{eq:c1} \text{--} \eqref{eq:c3}, \quad \forall (s,d) \in \mathcal{R}, \\
+& 0 \leq \omega_{ij}^{sd} \leq 1, \forall (i,j) \in \mathcal{E}.
+\end{aligned}
+\end{equation}
+\textcolor{blue}{Since the constraint matrix of \eqref{eq:c1}--\eqref{eq:c3} is totally unimodular, the LP relaxation yields integer-valued optimal solutions, which are obtained via the Gurobi optimizer and used as ground truth for GNN training~\cite{zhao2022link}.} Using $\omega_{ij}^{sd*}$ from Eq.~\eqref{eq:lp_relaxation}, the expected ISL utilization rate $\mathcal{I}_{ij}$ is computed as
+\begin{equation} \label{eq:utilization}
+    \mathcal{I}_{ij} = \frac{1}{|\mathcal{R}|} \sum_{(s,d)\in\mathcal{R}} \omega_{ij}^{sd*},
+\end{equation}
+and the corresponding binary ground-truth label $y_{ij}$ is assigned using Eq.~\eqref{eq:utilization} as
+\begin{equation} \label{eq:label}
+    y_{ij} = \begin{cases} 1, & \text{if } \mathcal{I}_{ij} \geq \tau_{\text{train}} \\ 0, & \text{otherwise,} \end{cases}
+\end{equation}
+where $\tau_{\text{train}}$ denotes the labeling threshold for ISL retention.
+Let $\boldsymbol{\Theta}$ denote the set of all trainable parameters in the GNN. We optimize $\boldsymbol{\Theta}$ via the binary cross-entropy loss $\mathcal{L}(\boldsymbol{\Theta})$:
+\begin{equation} \label{eq:loss_function}
+\begin{aligned}
+    \mathcal{L}(\boldsymbol{\Theta}) = &-\frac{1}{|\mathcal{E}|} \sum_{(i,j) \in \mathcal{E}} \Big[ y_{ij} \log \hat{p}_{ij} \\
+    &+ (1 - y_{ij}) \log (1 - \hat{p}_{ij}) \Big] + \Lambda_{wd} \|\boldsymbol{\Theta}\|^2,
+\end{aligned}
+\end{equation}
+where $\Lambda_{wd}$ is the weight decay coefficient. After the training phase, the pruned graph $\mathcal{G}' = (\mathcal{S}, \mathcal{E}')$ is constructed with a reduced link set $\mathcal{E}' = \{ (i,j) \in \mathcal{E} \mid \hat{p}_{ij} \geq \tau \}$, where $\tau$ represents the inference pruning threshold. \textcolor{blue}{Since $\mathbf{e}_{ij}$ is recomputed from the current SINR and TLE data at each snapshot, the trained GNN is reused across snapshots within the same orbital configuration. Since $\mathbf{u}_i^{(0)}$ and $\mathbf{e}_{ij}$ are defined solely from structural and link state properties without dependence on the source--destination pairs in $\mathcal{R}$, the trained GNN is also applicable to different source--destination configurations within the same orbital configuration without retraining. The inference complexity is $\mathcal{O}(L|\mathcal{E}|d)$, where $d$ is the hidden dimension.}
+
+\subsection{Utility-Based Heuristic Routing on the Pruned Graph}
+\label{subsec:routing}
+
+Since the pruned graph $\mathcal{G}'$ retains only stable and high-utility ISLs, we determine the routing paths $P_{sd}^*$ on $\mathcal{G}'$ using a priority-based heuristic. To evaluate both the accumulated path utility and the maximum possible utility from the next hop, the priority function $f(i)$ for satellite $i$ is defined as
+\begin{equation} \label{eq:priority_func}
+    f(i) = \frac{g(i) + \psi(i)}{H_{si} + 1},
+\end{equation}
+where $g(i)$ denotes the accumulated ISL utility from source satellite $s$ to current satellite $i$, $H_{si}$ denotes the corresponding hop count, and $\psi(i) = \max_{j \in \mathcal{N}_i \cap \mathcal{E}'} U_{ij}$ is the maximum ISL utility among all available outgoing ISLs connected to satellite $i$ within the pruned graph $\mathcal{G}'$. \textcolor{blue}{It is noted that $f(i)$ in Eq.~\eqref{eq:priority_func} balances path utility and hop count: it assigns a higher priority to paths whose average per-hop utility is high relative to their length, which penalizes paths that achieve shorter hop counts at the expense of low-utility ISLs.}
+
+A priority queue $Q$ is initialized with the source satellite $s$. At each iteration, the algorithm extracts satellite $i$ with the highest priority $f(i)$ and evaluates its adjacent neighbors $j \in \mathcal{N}_i \cap \mathcal{E}'$. The candidate priority is computed as $f_n = (g(i) + U_{ij} + \psi(j)) / (H_{si} + 2)$. If $j$ is unvisited or $f_n > f(j)$, the routing state of $j$ is updated and $j$ is re-inserted into $Q$ with satellite $i$ recorded as its predecessor. This expansion continues until the destination $d$ is reached, after which the optimal path $P_{sd}^*$ is extracted by backtracking the recorded predecessors from $d$ to $s$. \textcolor{blue}{The priority queue expansion has complexity $\mathcal{O}(|\mathcal{S}|\log|\mathcal{S}| + |\mathcal{E}'|)$ per source--destination pair.}

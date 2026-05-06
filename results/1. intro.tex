@@ -1,0 +1,22 @@
+\section{Introduction}\label{sec:introduction}
+Low Earth orbit (LEO) satellite-ground integrated networks have emerged as a promising solution to provide global Internet access. In the aerospace industry, several commercial enterprises, such as SpaceX, Amazon, and OneWeb, have constructed LEO mega-constellations (LMCs) to ensure ubiquitous coverage and support massive user access with high data rates~\cite{wang2022mega},~\cite{cao2025dense}\textcolor{blue}{,~\cite{he2024direct},~\cite{he2022multi}}.
+Since a single LEO satellite cannot provide continuous service between two terrestrial users due to its limited coverage and mobility, inter-satellite links (ISLs) are introduced to enable seamless long-distance communication~\cite{mao2024intelligent}.
+To enable reliable communication through ISLs under dynamic topology changes caused by satellite mobility, it is essential to determine optimal routing paths that maintain connectivity between satellites.
+Hence, routing methods for ISLs have been proposed, primarily focusing on routing in single-tier LMCs, where satellites are deployed at the same orbital altitude.
+However, the rapid growth of satellite deployments has resulted in multi-tier LMCs with heterogeneous orbital altitudes, increasing the number of deployed satellites and the corresponding ISLs per satellite. This leads to a larger search space for finding optimal ISL routing paths~\cite{luan2024fast}.
+
+
+To overcome these limitations, several studies have proposed routing methods for multi-tier LMCs~\cite{hu2022software},~\cite{yan2024logic},~\cite{huang2026dynamic}.
+Hu \textit{et al.}~\cite{hu2022software} proposed a multi-tier rectilinear Steiner tree construction algorithm by extending spanning-graph and edge-substitution approaches to three dimensions.
+Yan \textit{et al.}~\cite{yan2024logic} proposed scalable routing methods by partitioning multi-tier LMCs into multiple groups based on their altitudes and orbital positions.
+Huang \textit{et al.}~\cite{huang2026dynamic} proposed a bidirectional search strategy that integrates customized cost functions for multi-tier LMCs, reducing the search space through effective pruning while preserving path optimality.
+
+
+However, none of these works consider ISL states between satellites in different tiers, including ISL duration and capacity.
+In multi-tier LMCs, communication between satellites at different orbital altitudes experiences frequent ISL disruptions due to differences in orbital velocities. For instance, satellites at lower altitudes move faster than those at higher altitudes, resulting in rapidly changing connectivity and shorter ISL durations across different tiers.
+Moreover, differences in ISL capacity may lead routing algorithms to select certain ISLs more frequently, resulting in traffic imbalances, congestion, and reduced network throughput~\cite{han2023time}.
+Therefore, it is essential to consider ISL states, including duration and capacity, to improve network throughput for stable transmission in multi-tier LMCs.
+
+
+In this letter, we propose a link-aware routing algorithm for multi-tier LMCs that handles dynamic changes in ISL states to enhance overall network throughput. We define an ISL utility based on ISL duration and capacity, and formulate a routing optimization problem to find optimal end-to-end (E2E) paths that maximize the \textcolor{blue}{average ISL utility}. As the formulated problem is NP-hard due to the exponential search space of all possible ISL combinations across source-destination pairs~\cite{guo2024lightweight}, we propose a routing algorithm to reduce the search space prior to path selection.
+First, a graph neural network (GNN) prunes unstable ISLs based on predicted retention probability to construct a pruned graph. Subsequently, a heuristic algorithm determines the optimal E2E paths on the pruned graph. Simulation results demonstrate that the proposed algorithm outperforms existing approaches in terms of packet loss rate and throughput.

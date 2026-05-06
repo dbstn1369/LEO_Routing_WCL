@@ -1,0 +1,82 @@
+\section{Performance Evaluation}
+
+\subsection{Simulation Settings}
+
+The simulation of the multi-tier LMC is conducted using the Starlink TLE dataset and the Satellite Tool Kit (STK) to \textcolor{blue}{model} realistic time-varying orbital dynamics~\cite{luan2024fast}. We consider 1,500 satellites uniformly distributed across $K=3$ tiers, where each tier comprises 500 satellites distributed across 17 orbital planes. We evaluate two altitude scenarios for the three tiers: (1) Scenario~1 with altitudes of 540, 550, and 560~km, and (2) Scenario~2 with altitudes of 400, 500, and 600~km.
+
+The proposed algorithm is implemented using PyTorch 1.9.0 on a workstation equipped with an NVIDIA RTX 3080 Ti GPU. The GNN architecture consists of $L=3$ graph convolutional layers with a hidden dimension of $64$. The model is trained over $100$ epochs using the Adam optimizer with a learning rate of $10^{-3}$. The channel bandwidth $B$ is $500$~MHz, the snapshot interval $T$ is $5$~min, and the noise power spectral density $N_0$ is $-174$~dBm/Hz~\cite{han2023time}. \textcolor{blue}{Doppler-induced frequency offsets in LEO ISLs are compensated using standard frequency-tracking methods~\cite{darsena2024hybrid}, and are assumed to be well-managed in standard LEO ISL operation~\cite{cao2025dense}.} The parameters $\varphi_p$ and $P_o$ are set to $70^\circ$ and $10$~W, respectively. The weighting factor $\beta$ and the pruning threshold $\tau$ are both set to $0.5$\textcolor{blue}{, selected based on the sensitivity analysis detailed in Section~IV-B}. \textcolor{blue}{To verify optimality, we generate reduced 3-tier networks of $N \in \{30, 50, 70\}$ satellites with the same constellation configuration and enumerate all simple paths up to 8 hops to obtain the optimal solution.}
+
+We evaluate the performance of the proposed algorithm in terms of the packet loss rate (PLR) and throughput compared with the following benchmark methods:
+1) Distance-based Routing (DR)~\cite{wang2023reliability},~\cite{hu2022software}: the routing path is selected based on the geometric distance between satellites to minimize transmission delay;
+2) Static Topology-based Routing (STR)~\cite{yan2024logic},~\cite{huang2026dynamic}: the routing decision is made by utilizing a fixed network structure within each snapshot interval;
+\textcolor{blue}{3) Graph Reinforcement Learning Routing (GRLR)~\cite{zhang2025grlr}: the routing path is selected by combining GNNs and RL to minimize the end-to-end delay.}
+\textcolor{blue}{Throughput is measured as the total successfully delivered data volume per unit time across all source--destination pairs, and PLR is the fraction of packets that fail to reach the destination due to link failures.}
+
+\subsection{Simulation Results}
+
+\begin{figure}[t!]
+\centering
+\includegraphics[width=0.85\linewidth]{Image/fig2_combined_duration.eps}
+\vspace{-0.2cm}
+\caption{Average throughput and packet loss rate over varying data transmission durations.}
+\vspace{-0.2cm}
+\label{fig:combined_results_duration}
+\end{figure}
+
+Fig.~\ref{fig:combined_results_duration} illustrates the average throughput and packet loss rate with respect to the data transmission duration at a data transmission rate of $2.8$~Gbps. In Scenario~1, the proposed algorithm achieves 3.0\% and 5.9\% higher throughput than DR and STR at a duration of 10~s, \textcolor{blue}{increasing to 5.4\%, 8.5\%, and 12.7\% higher throughput than GRLR, DR, and STR at 100~s, respectively}. This is because the proposed algorithm selects ISLs with longer durations and higher SINR values, as shown in Fig.~\ref{fig:box_comparison}, while \textcolor{blue}{GRLR does not consider ISL duration or capacity,} DR experiences increasing link failures over time, and STR experiences more disconnections as the fixed snapshot becomes outdated. Consequently, the packet loss rate is reduced by 2.1\% and 3.3\% at 10~s compared to DR and STR, \textcolor{blue}{and by 3.6\%, 5.7\%, and 7.4\% at 100~s compared to GRLR, DR, and STR}, respectively, as shown in Fig.~\ref{fig:combined_results_duration}(b). In Scenario~2, the proposed algorithm achieves 2.2\% and 5.6\% higher throughput than DR and STR at 10~s, \textcolor{blue}{increasing to 5.5\%, 8.1\%, and 12.8\% higher throughput than GRLR, DR, and STR at 100~s, respectively}, and reduces the packet loss rate by 1.2\% and 2.6\% at 10~s compared to DR and STR, \textcolor{blue}{and by 3.4\%, 5.2\%, and 7.1\% at 100~s compared to GRLR, DR, and STR}, respectively, as shown in Figs.~\ref{fig:combined_results_duration}(c) and (d).
+
+\begin{figure}[t!]
+\centering
+\includegraphics[width=0.85\linewidth]{Image/fig3_combined_box.eps}
+\vspace{-0.2cm}
+\caption{Comparison of average ISL duration and SINR.}
+\vspace{-0.2cm}
+\label{fig:box_comparison}
+\end{figure}
+
+\begin{figure}[t!]
+\centering
+\includegraphics[width=0.85\linewidth]{Image/fig4_combined_rate.eps}
+\vspace{-0.2cm}
+\caption{Average throughput and packet loss rate over varying data transmission rates.}
+\vspace{-0.2cm}
+\label{fig:combined_results_rate}
+\end{figure}
+
+Fig.~\ref{fig:combined_results_rate} shows the average throughput and packet loss rate as the data transmission rate increases at a data transmission duration of $100$~s. In Scenario~1, the proposed algorithm achieves 6.7\% and 9.1\% higher throughput than DR and STR at 1.0~Gbps, \textcolor{blue}{increasing to 5.4\%, 8.5\%, and 12.7\% higher throughput than GRLR, DR, and STR at 2.8~Gbps, respectively}. This is because the proposed algorithm jointly considers ISL duration and capacity to select paths with stable ISLs, while \textcolor{blue}{GRLR does not consider ISL duration or capacity,} DR selects paths based on geometric distance without considering ISL capacity, and STR uses a fixed topology that does not reflect the current ISL state. Consequently, the packet loss rate is reduced by 5.6\% and 7.3\% at 1.0~Gbps compared to DR and STR, \textcolor{blue}{and by 3.6\%, 5.7\%, and 7.4\% at 2.8~Gbps compared to GRLR, DR, and STR}, respectively, as shown in Figs.~\ref{fig:combined_results_rate}(a) and (b). In Scenario~2, the proposed algorithm achieves 6.1\% and 8.7\% higher throughput than DR and STR at 1.0~Gbps, \textcolor{blue}{increasing to 5.5\%, 8.1\%, and 12.8\% higher throughput than GRLR, DR, and STR at 2.8~Gbps, respectively}, and reduces the packet loss rate by 5.1\% and 6.8\% at 1.0~Gbps compared to DR and STR, \textcolor{blue}{and by 3.4\%, 5.2\%, and 7.1\% at 2.8~Gbps compared to GRLR, DR, and STR}, respectively, as shown in Figs.~\ref{fig:combined_results_rate}(c) and (d).
+
+\textcolor{blue}{Table~\ref{tab:sensitivity} shows the sensitivity of throughput and PLR to $\tau$, $\beta$, and $T$. We observe that $\tau = \beta = 0.5$ and $T = 5$~min achieve the best performance. This is because $\tau \geq 0.7$ removes too many ISLs and $T \geq 10$~min cannot reflect the current ISL state. The proposed algorithm also achieves 8.8\% higher throughput and 5.2\% lower PLR than its version without GNN-based pruning. Table~\ref{tab:optimality} confirms near-optimal performance, with the proposed algorithm reaching 95.7\% and 93.0\% of the optimal throughput at $N=30$ and $N=70$, respectively.}
+
+\begin{table}[t]
+\caption{Sensitivity of $\tau$, $\beta$, and Snapshot Interval $T$ (Scenario~2, 2.8~Gbps, 100~s; Throughput in Gbps, PLR in \%)}
+\label{tab:sensitivity}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{cc|cc|cc}
+\hline
+$\tau$ & Thr./PLR & $\beta$ & Thr./PLR & $T$ (min) & Thr./PLR \\
+\hline
+0.1 & 1.461/26.0  & 0.1 & 1.529/23.6 & 1  & 1.589/20.8 \\
+0.3 & 1.461/26.0  & 0.3 & 1.577/21.6 & 5  & 1.589/20.8 \\
+0.5 & 1.589/20.8  & 0.5 & 1.589/20.8 & 10 & 0.863/57.0 \\
+0.7 & 0.024/98.8  & 0.7 & 1.548/22.7 & 30 & 0.319/84.1 \\
+0.9 & 0.000/100.0 & 0.9 & 1.510/24.4 & -- & --         \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\caption{Optimality at Small Scale (Scenario~2, 2.8~Gbps, 100~s)}
+\label{tab:optimality}
+\centering
+\footnotesize
+\begin{tabular}{l|ccc}
+\hline
+$N$                              & 30          & 50          & 70          \\
+\hline
+Throughput Opt/Prop (Gbps)       & 2.151/2.060 & 2.058/1.906 & 2.123/1.974 \\
+PLR Opt/Prop (\%)                & 6.3/7.2     & 7.9/9.9     & 6.7/8.3     \\
+\hline
+\end{tabular}
+\end{table}

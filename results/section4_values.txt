@@ -1,0 +1,45 @@
+=== Final Results ===
+
+Rate=1.0G, Dur=10s:
+  vs GRLR: Thr +-1.1%, PLR --1.2%p
+  vs DR: Thr +-1.1%, PLR --1.2%p
+  vs STR: Thr +-0.7%, PLR --1.2%p
+
+Rate=1.0G, Dur=100s:
+  vs GRLR: Thr +3.9%, PLR -3.2%p
+  vs DR: Thr +6.1%, PLR -5.1%p
+  vs STR: Thr +8.7%, PLR -6.8%p
+
+Rate=2.8G, Dur=10s:
+  vs GRLR: Thr +1.0%, PLR -0.0%p
+  vs DR: Thr +2.2%, PLR -1.2%p
+  vs STR: Thr +5.6%, PLR -2.6%p
+
+Rate=2.8G, Dur=100s:
+  vs GRLR: Thr +5.5%, PLR -3.4%p
+  vs DR: Thr +8.1%, PLR -5.2%p
+  vs STR: Thr +12.8%, PLR -7.1%p
+
+=== tau sensitivity ===
+  tau=0.1: Thr=1.461 PLR=26.0%
+  tau=0.3: Thr=1.461 PLR=26.0%
+  tau=0.5: Thr=1.589 PLR=20.8%
+  tau=0.7: Thr=0.024 PLR=98.8%
+  tau=0.9: Thr=0.000 PLR=100.0%
+
+=== beta sensitivity ===
+  beta=0.1: Thr=1.529 PLR=23.6%
+  beta=0.3: Thr=1.577 PLR=21.6%
+  beta=0.5: Thr=1.589 PLR=20.8%
+  beta=0.7: Thr=1.548 PLR=22.7%
+  beta=0.9: Thr=1.510 PLR=24.4%
+
+=== Ablation ===
+  Proposed:    Thr=1.589 PLR=20.8%
+  w/o Pruning: Thr=1.461 PLR=26.0%
+
+=== Optimality (N_PAIRS=500, MAX_HOPS=8) ===
+  N=30: Prop/Opt Thr=2.060/2.151 (95.7%), PLR=7.2/6.3 (+0.9 pp)
+  N=50: Prop/Opt Thr=1.906/2.058 (92.6%), PLR=9.9/7.9 (+1.9 pp)
+  N=70: Prop/Opt Thr=1.974/2.123 (93.0%), PLR=8.3/6.7 (+1.6 pp)
+  Average ratio: 93.8%
