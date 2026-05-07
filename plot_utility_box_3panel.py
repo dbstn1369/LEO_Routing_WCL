@@ -2,8 +2,15 @@
 3-panel box plot: Average ISL Duration / Average SINR / Average U_ij
 per algorithm (Proposed, GRLR, DR, STR), reading from results/paths_graphs_s2.pkl.
 
-U_ij = beta * (l_ij / T) + (1 - beta) * softmax(c_ij over all ISLs in graph)
-beta = cfg.BETA, T = cfg.SNAPSHOT_INTERVAL_S
+Paper definition (Eq. utility_components / utility_def):
+    U_ij^l = l_ij / T,   U_ij^c = exp(c_ij) / sum_{(m,n) in E} exp(c_mn)
+    U_ij   = beta * U_ij^l + (1 - beta) * U_ij^c
+beta = cfg.BETA, T = cfg.SNAPSHOT_INTERVAL_S.
+
+The capacity term U_ij^c sums to 1 over |E|, so per-edge values are O(1/|E|)
+(very small in absolute terms). The duration term dominates the absolute
+magnitude. Y-axis uses scientific notation so the relative ordering across
+algorithms is visible at the readable scale.
 
 Output: results/fig3_combined_box_3panel.{eps,png}
 """
@@ -153,11 +160,15 @@ def main():
         if utilities[a]:
             print(f"  {a:>10s}: {np.mean(utilities[a]):.4e}", flush=True)
 
+    # Scale U_ij by 100 for readable y-axis numbers; paper definition unchanged.
+    UTIL_SCALE = 100.0
+    utilities_scaled = {a: [v * UTIL_SCALE for v in utilities.get(a, [])] for a in utilities}
+
     fig, axes = plt.subplots(1, 3, figsize=(27, 8))
     panels = [
-        (axes[0], durations, 'Average Duration (s)',          '(a) Average Duration'),
-        (axes[1], sinrs,     'Average SINR (dB)',             '(b) Average SINR'),
-        (axes[2], utilities, r'Average $U_{ij}$',             '(c) Average ISL Utility'),
+        (axes[0], durations,        'Average Duration (s)',                           '(a) Average Duration'),
+        (axes[1], sinrs,            'Average SINR (dB)',                              '(b) Average SINR'),
+        (axes[2], utilities_scaled, r'Average $U_{ij}$ $(\times 10^{-2})$',           '(c) Average ISL Utility'),
     ]
     for ax, data_dict, yl, _title in panels:
         style_box(ax, data_dict, order, yl)
