@@ -123,9 +123,11 @@ def main():
         style_box(ax, data_dict, order, yl)
 
     plt.tight_layout()
+    # Tighten margins: left clears the (Gbps)/(s) y-label, bottom clears xticks + subtitle.
+    plt.subplots_adjust(left=0.08, right=0.98, bottom=0.20, wspace=0.28)
     for ax, _, _, title in panels:
-        ax.text(0.5, -0.18, title, transform=ax.transAxes,
-                ha='center', va='top', fontsize=FONT_SIZE)
+        ax.text(0.5, -0.12, title, transform=ax.transAxes,
+                ha='center', va='top', fontsize=FONT_SIZE + 6)
 
     eps_path = os.path.join(OUT_DIR, 'fig3_combined_box_l_c.eps')
     png_path = os.path.join(OUT_DIR, 'fig3_combined_box_l_c.png')
