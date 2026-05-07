@@ -119,21 +119,18 @@ def main():
         (axes[0], durations,  r'Avg. ISL Duration $l_{ij}$ (s)',     '(a)'),
         (axes[1], capacities, r'Avg. ISL Capacity $c_{ij}$ (Gbps)',  '(b)'),
     ]
-    for ax, data_dict, yl, _title in panels:
+    for ax, data_dict, yl, title in panels:
         style_box(ax, data_dict, order, yl)
+        # Use xlabel for the (a)/(b) subtitle: tight_layout/bbox_inches='tight'
+        # treat it as part of the axes, so the EPS bbox is correct in LaTeX.
+        ax.set_xlabel(title, fontsize=FONT_SIZE, labelpad=8)
 
-    plt.tight_layout()
-    # Tighten margins: left clears the (Gbps)/(s) y-label, bottom clears xticks + subtitle.
-    plt.subplots_adjust(left=0.08, right=0.98, bottom=0.20, wspace=0.28)
-    # Keep fontsize matching other figures; only tighten the gap to xticks.
-    for ax, _, _, title in panels:
-        ax.text(0.5, -0.12, title, transform=ax.transAxes,
-                ha='center', va='top', fontsize=FONT_SIZE)
+    plt.tight_layout(pad=0.5, w_pad=2.0)
 
     eps_path = os.path.join(OUT_DIR, 'fig3_combined_box_l_c.eps')
     png_path = os.path.join(OUT_DIR, 'fig3_combined_box_l_c.png')
-    fig.savefig(eps_path, format='eps', bbox_inches='tight')
-    fig.savefig(png_path, format='png', bbox_inches='tight', dpi=150)
+    fig.savefig(eps_path, format='eps', bbox_inches='tight', pad_inches=0.05)
+    fig.savefig(png_path, format='png', bbox_inches='tight', pad_inches=0.05, dpi=150)
     plt.close(fig)
     print(f"\nSaved:\n  {eps_path}\n  {png_path}")
 
