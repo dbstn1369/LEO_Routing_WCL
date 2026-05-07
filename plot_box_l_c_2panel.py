@@ -113,8 +113,8 @@ def main():
 
     fig, axes = plt.subplots(1, 2, figsize=(18, 8))
     panels = [
-        (axes[0], durations,  r'Avg. ISL Duration $l_{ij}$ (s)',     '(a) Avg. ISL Duration'),
-        (axes[1], capacities, r'Avg. ISL Capacity $c_{ij}$ (Gbps)',  '(b) Avg. ISL Capacity'),
+        (axes[0], durations,  r'Avg. ISL Duration $l_{ij}$ (s)',     '(a) Average ISL Duration'),
+        (axes[1], capacities, r'Avg. ISL Capacity $c_{ij}$ (Gbps)',  '(b) Average ISL Capacity'),
     ]
     for ax, data_dict, yl, _title in panels:
         style_box(ax, data_dict, order, yl)
