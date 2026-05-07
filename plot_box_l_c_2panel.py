@@ -25,7 +25,10 @@ import config as cfg
 
 FONT_SIZE = 32
 plt.rcParams.update({
-    'font.family': 'Times New Roman',
+    # Real LaTeX rendering (requires MiKTeX/TeXLive; Times-style math via mathptmx).
+    'text.usetex': True,
+    'text.latex.preamble': r'\usepackage{mathptmx}',
+    'font.family': 'serif',
     'font.size': FONT_SIZE,
     'axes.labelsize': FONT_SIZE,
     'xtick.labelsize': FONT_SIZE,
