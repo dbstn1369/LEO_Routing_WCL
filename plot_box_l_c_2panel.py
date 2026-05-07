@@ -25,10 +25,13 @@ import config as cfg
 
 FONT_SIZE = 32
 plt.rcParams.update({
-    # Real LaTeX rendering (requires MiKTeX/TeXLive; Times-style math via mathptmx).
-    'text.usetex': True,
-    'text.latex.preamble': r'\usepackage{mathptmx}',
-    'font.family': 'serif',
+    # NOTE: text.usetex=True breaks the EPS bounding box when LaTeX
+    # \includegraphics it (figure renders shrunken with whitespace).
+    # Use mathtext+STIX instead — Times-like math, identical EPS pipeline
+    # as plot_figures.py (which renders correctly in the paper).
+    'font.family': 'Times New Roman',
+    'mathtext.fontset': 'stix',
+    'mathtext.rm': 'serif',
     'font.size': FONT_SIZE,
     'axes.labelsize': FONT_SIZE,
     'xtick.labelsize': FONT_SIZE,
