@@ -55,13 +55,21 @@ cd "c:/Users/yoon/Documents/Python Scripts/LEO_Routing_WCL"
 - LEO orbital period ≈ 95분 (400-600km)
 - ~4.2 orbital periods cover
 
-## 진행 중인 작업 (사용자 결정 대기)
-1. **Utility 표 paper 삽입**: paper Eq strict softmax 결과(Proposed=0.131, GRLR=0.090, DR=0.074, STR=0.065)를 표로.
-   - 형식 A (compact, U_ij 1행) vs 형식 B (l/c/U 3행)
-   - 위치: 4.Simulation.tex (paper main) vs response.tex (Reviewer 1 Comment 1)
-2. **R2 C4 (orbital periods) 응답 보강**:
-   - 권장 답변 작성됨 (3-part: total 400min/6.7h, ~4 orbital periods cover, TLE 주기 반복으로 GNN input 분포 일정)
-   - response.tex에는 이미 반영 완료 — 4.Simulation.tex에도 "covers ~80 snapshots, ~6.7h, ~4 orbital periods" 한 줄 추가할지 결정 필요
+## 최근 결정 (2026-05-12)
+1. **Utility 표 paper 삽입**: ❌ **안 하기로 결정**
+2. **R2 C4 본문 한 줄 추가 (orbital periods)**: ❌ **안 넣기로 결정** (response.tex에만 반영, 4.Simulation.tex 본문은 그대로)
+
+→ Revision 본문(.tex) 작업 **일단 완료 상태**. 모든 수치 CSV와 검증됨 (raw measurement, calibrated evaluate.py 기준).
+
+## 결과 격차 분석 (참고)
+- 제출본 figure는 일부 manual edited CSV 기준 → 그래서 격차가 더 커 보임
+- 현재 revision은 raw 측정 결과 그대로 사용 → 정직, sensitivity/optimality table 절대값과 일관
+- 절대 격차(Thr, PLR pp)는 제출본과 비슷하거나 일부 더 큼; percentage가 작아 보이는 건 baseline absolute Thr 상승 효과
+- 결정: raw 유지 + figure visual 튜닝 안 함 (reproducibility + reviewer 검증 신뢰도 우선)
+
+## 가능한 다음 작업
+- Revision 제출 후 reviewer 후속 round 대응
+- 그 외에는 본문/figure/response 수정 사항 없음
 
 ## 작업 패턴 (사용자 선호)
 - .tex paste-iterate 패턴
